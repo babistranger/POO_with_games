@@ -10,18 +10,21 @@ enum BigRedState {
 @onready var hitbox: Area2D = $Hitbox
 @onready var wall_detector: RayCast2D = $WallDetector
 @onready var ground_detector: RayCast2D = $GroundDetector
+@onready var health_bar: TextureProgressBar = $CanvasLayer/health_bar
 
 const SPEED = 10.0
 const JUMP_VELOCITY = -400.0
 
 var status: BigRedState
 var direction = 1
-@export var max_health = 3
-var health = 3
+@export var max_health = 3.0
+var health = 0.0
 
 
 func _ready() -> void:
 	health = max_health
+	health_bar.max_value = max_health
+	health_bar.value = health
 	go_to_walk_state()
 
 func _physics_process(delta: float) -> void:
@@ -68,8 +71,8 @@ func walk_state(_delta):
 		scale.x *= -1 
 		direction *= -1 
 		
-func receive_damage_state(delta):
-	if not anima.is_playing():
+func receive_damage_state():
+	#if not anima.is_playing():
 		if health > 0:
 			go_to_walk_state()
 		else:
@@ -81,6 +84,8 @@ func dead_state(_delta):
 func take_damage(damage = 1): 
 	if status == BigRedState.dead:
 		return
+	health_bar.visible = true       #A barra de saúde só aparece quando toma dano
+	health_bar.value = health        
 	health -= damage
 	if health > 0:
 		go_to_receive_damage_state()
