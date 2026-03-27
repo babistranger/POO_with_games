@@ -35,24 +35,24 @@ func _physics_process(delta: float) -> void:
 		velocity += get_gravity() * delta              #add gravidade
 	
 	match status: 
-		PlayerState.idle: 
-			idle_state(delta)
-		PlayerState.walk: 
+		PlayerState.idle:              #estado parado
+			idle_state(delta) 
+		PlayerState.walk:              #estado andando
 			walk_state(delta)
-		PlayerState.jump: 
+		PlayerState.jump:              #estado pulando
 			jump_state(delta)
-		PlayerState.fall: 
+		PlayerState.fall:              #estado caindo
 			fall_state(delta)
-		PlayerState.duck: 
+		PlayerState.duck:              #estado se abaixando
 			duck_state(delta)
-		PlayerState.slide:
+		PlayerState.slide:             #estado deslizando (de barriga)
 			slide_state(delta)
-		PlayerState.dead:
+		PlayerState.dead:              #estado morto
 			dead_state(delta)
 			
 	move_and_slide()
 
-#Implementando as funções de transição de estado
+#Implementando as funções de transição de estados
 func go_to_idle_state():
 	status = PlayerState.idle
 	anima.play("idle")
@@ -85,7 +85,7 @@ func go_to_slide_state():
 	anima.play("slide")
 	set_small_collider()
 	
-func exit_from_slide_state():
+func exit_from_slide_state():   #Encerrando o deslizar
 	set_large_collider()
 	
 func go_to_dead_state():
@@ -94,7 +94,7 @@ func go_to_dead_state():
 	velocity = Vector2.ZERO
 		
 func idle_state(delta):
-	move(delta)
+	move(delta)               #executar a função de movimento
 	if velocity.x != 0: 
 		go_to_walk_state()
 		return 
@@ -108,7 +108,7 @@ func idle_state(delta):
 		return
 	
 func walk_state(delta):
-	move(delta)
+	move(delta)               #executar a função de movimento
 	if velocity.x == 0: 
 		go_to_idle_state()
 		return
@@ -126,7 +126,7 @@ func walk_state(delta):
 		return
 		
 func jump_state(delta):
-	move(delta)
+	move(delta)           #executar a função de movimento
 	
 	if Input.is_action_just_pressed("jump") && can_jump():
 		go_to_jump_state()
@@ -137,7 +137,7 @@ func jump_state(delta):
 		return
 		
 func fall_state(delta):
-	move(delta)
+	move(delta)           #executar a função de movimento
 	
 	if Input.is_action_just_pressed("jump") && can_jump():
 		go_to_jump_state()
@@ -203,7 +203,7 @@ func set_large_collider():                  #aumentando o colisor
 	collision_shape.shape.height = 16
 	collision_shape.position.y = 0
 	
-func _on_hitbox_area_entered(area: Area2D) -> void:         #verificar se entrou em contato com o inimigo
+func _on_hitbox_area_entered(area: Area2D) -> void:         #verificar se entrou em contato com o inimigo para morrer ou matar o inimigo
 	var enemy = area.get_parent()
 	if enemy.has_method("take_damage"):
 		if velocity.y > 0: 
@@ -214,4 +214,4 @@ func _on_hitbox_area_entered(area: Area2D) -> void:         #verificar se entrou
 			if status != PlayerState.dead:
 				go_to_dead_state()
 			#player morre
-		
+	

@@ -11,6 +11,7 @@ enum BigRedState {
 @onready var wall_detector: RayCast2D = $WallDetector
 @onready var ground_detector: RayCast2D = $GroundDetector
 @onready var health_bar: TextureProgressBar = $CanvasLayer/health_bar
+@onready var status_label: Label = $CanvasLayer/StatusLabel
 
 const SPEED = 10.0
 const JUMP_VELOCITY = -400.0
@@ -27,11 +28,10 @@ func _ready() -> void:
 	health_bar.value = _health
 	go_to_walk_state()
 
-func _physics_process(delta: float) -> void:
-	
+func _physics_process(delta: float) -> void:          #Implementar os processos físicos
 	
 	if not is_on_floor():
-		velocity = get_gravity() * delta           #add gravidade 
+		velocity += get_gravity() * delta           #add gravidade 
 		
 	match status:                                 #implementando uma máquina de estados finitos
 		BigRedState.walk:                        #estado para o inimigo patrulhar
@@ -57,7 +57,7 @@ func go_to_receive_damage_state():
 func go_to_dead_state(): 
 	status = BigRedState.dead
 	anima.play("dead")
-	hitbox.process_mode = Node.PROCESS_MODE_DISABLED
+	hitbox.process_mode = Node.PROCESS_MODE_DISABLED     #Matar também o colisor de área de "ataque"
 	velocity = Vector2.ZERO
 	
 func walk_state(_delta):                      
@@ -71,8 +71,8 @@ func walk_state(_delta):
 		scale.x *= -1 
 		direction *= -1 
 		
-func receive_damage_state():
-	#if not anima.is_playing():
+func receive_damage_state():                  #Função para o estado de receber dano
+	if not anima.is_playing():
 		if _health > 0:
 			go_to_walk_state()
 		else:
@@ -81,8 +81,8 @@ func receive_damage_state():
 func dead_state(_delta): 
 	pass 
 	
-func take_damage(damage = 1):           #O método que modifica a saúde do inimigo
-	if status == BigRedState.dead:
+func take_damage(damage = 1):           #O método que modifica a saúde do inimigo (impõe dano ao inimigo)
+	if status == BigRedState.dead:      #Verificando se o inimigo não está morto 
 		return
 	health_bar.visible = true       #A barra de saúde só aparece quando toma dano
 	health_bar.value = _health        
@@ -90,4 +90,17 @@ func take_damage(damage = 1):           #O método que modifica a saúde do inim
 	if _health > 0:
 		go_to_receive_damage_state()
 	else:
-		go_to_dead_state()
+		go_to_dead_state()     #vai pro estado de morto 
+
+func display_status():                #Função para mostrar o status do inimigo
+	var state_text = ""
+
+	match status:
+		BigRedState.walk:
+			state_text = "WALK"
+		BigRedState.receive_damage:
+			state_text = "HIT"
+		BigRedState.dead:
+			state_text = "DEAD"
+
+	status_label.text = "HP: %d | State: %s | Dir: %d" % [_health, state_text, direction]      #HP - quantas vidas tem, state, que estado está, direção
