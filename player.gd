@@ -32,7 +32,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	
 	if not is_on_floor():
-		velocity += get_gravity() * delta
+		velocity += get_gravity() * delta              #add gravidade
 	
 	match status: 
 		PlayerState.idle: 
@@ -203,7 +203,7 @@ func set_large_collider():                  #aumentando o colisor
 	collision_shape.shape.height = 16
 	collision_shape.position.y = 0
 	
-func _on_hitbox_area_entered(area: Area2D) -> void:
+func _on_hitbox_area_entered(area: Area2D) -> void:         #verificar se entrou em contato com o inimigo
 	var enemy = area.get_parent()
 	if enemy.has_method("take_damage"):
 		if velocity.y > 0: 

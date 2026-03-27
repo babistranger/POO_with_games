@@ -17,33 +17,33 @@ const JUMP_VELOCITY = -400.0
 
 var status: BigRedState
 var direction = 1
-@export var max_health = 3.0
-var health = 0.0
+@export var max_health = 3.0 
+var _health = 0.0              # O símbolo antes da variável torna ela privada em godot
 
 
 func _ready() -> void:
-	health = max_health
+	_health = max_health
 	health_bar.max_value = max_health
-	health_bar.value = health
+	health_bar.value = _health
 	go_to_walk_state()
 
 func _physics_process(delta: float) -> void:
-	# Add the gravity.
+	
 	
 	if not is_on_floor():
-		velocity = get_gravity() * delta
+		velocity = get_gravity() * delta           #add gravidade 
 		
-	match status: 
-		BigRedState.walk:
+	match status:                                 #implementando uma máquina de estados finitos
+		BigRedState.walk:                        #estado para o inimigo patrulhar
 			walk_state(delta)
-		BigRedState.receive_damage:
-			receive_damage_state(delta)
-		BigRedState.dead: 
+		BigRedState.receive_damage:             #estado ser atacado
+			receive_damage_state()
+		BigRedState.dead:                      #estado ser morto
 			dead_state(delta)
 			
 	move_and_slide()
 			
-func go_to_walk_state(): 
+func go_to_walk_state():                            #estado de transição para o inimigo patrulhar
 	status = BigRedState.walk
 	anima.play("walk")
 	
@@ -60,20 +60,20 @@ func go_to_dead_state():
 	hitbox.process_mode = Node.PROCESS_MODE_DISABLED
 	velocity = Vector2.ZERO
 	
-func walk_state(_delta): 
+func walk_state(_delta):                      
 	velocity.x = SPEED * direction
 	
-	if wall_detector.is_colliding():
+	if wall_detector.is_colliding():             #função de andar para patrulhar um território verificando o limite de parede
 		scale.x *= -1 
 		direction *= -1 
 		
-	if not ground_detector.is_colliding():
+	if not ground_detector.is_colliding():      #patrulhando um território, verificando o limite de piso para não cair aleatoriamente
 		scale.x *= -1 
 		direction *= -1 
 		
 func receive_damage_state():
 	#if not anima.is_playing():
-		if health > 0:
+		if _health > 0:
 			go_to_walk_state()
 		else:
 			go_to_dead_state()
@@ -81,13 +81,13 @@ func receive_damage_state():
 func dead_state(_delta): 
 	pass 
 	
-func take_damage(damage = 1): 
+func take_damage(damage = 1):           #O método que modifica a saúde do inimigo
 	if status == BigRedState.dead:
 		return
 	health_bar.visible = true       #A barra de saúde só aparece quando toma dano
-	health_bar.value = health        
-	health -= damage
-	if health > 0:
+	health_bar.value = _health        
+	_health -= damage
+	if _health > 0:
 		go_to_receive_damage_state()
 	else:
 		go_to_dead_state()
