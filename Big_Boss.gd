@@ -20,15 +20,15 @@ func go_to_fly_state():                            #estado de transição para o
 
 func _physics_process(delta):
 	move(delta)
-    match state:
-		Big_BossState.fly:                 #O status do Big boss que al[em das funções do enemy, voa]
-			fly_state(delta)
+    	match state:
+			Big_BossState.fly:                 #O status do Big boss que al[em das funções do enemy, voa]
+				fly_state(delta)
 	move_and_slide()
 
 func fly_state(delta):                     #função de voar
 	move(delta)
 
-    func move():
+    func move(delta):
 	velocity.x = speed * direction
 	
 	velocity.y = -altitude            #voo em altura constante
