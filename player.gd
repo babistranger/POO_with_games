@@ -1,4 +1,4 @@
-extends CharacterBody2D
+extends CharacterBody2D      #herdando métodos e funções da classe CharacterBody2D
 
 enum PlayerState{
 	idle,

@@ -71,7 +71,7 @@ func walk_state(_delta):
 		scale.x *= -1 
 		direction *= -1 
 		
-func move():
+func move(delta):
 	velocity.x = SPEED * direction
 
 func receive_damage_state():                  #Função para o estado de receber dano

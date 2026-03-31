@@ -1,8 +1,15 @@
 class_name FlyingEnemy
 extends enemy             #Herança da Classe Inimigo 
 
+enum State {
+	fly
+}
+
+
 @onready var wall_detector: RayCast2D = $WallDetector
 @onready var ground_detector: RayCast2D = $GroundDetector
+
+var state = Big_BossState
 
 var altitude: float = 50.0
 var speed: float = 80.0
@@ -14,14 +21,20 @@ func move():
 	velocity.y = -altitude            #voo em altura constante
 
 	if wall_detector.is_colliding() or not ground_detector.is_colliding():
-		turn_around()
+		turn_around(delta)
 
-func turn_around():
+func turn_around(delta):
 	direction *= -1
 	
-	wall_detector.target_position.x *= -1.          #inverter os detectores 
+	wall_detector.target_position.x *= -1         #inverter os detectores 
 	ground_detector.target_position.x *= -1         
 
 func _physics_process(delta):
-	move()
+	move(delta)
+    match state:
+		Big_BossState.fly:
+			fly_state(delta)
 	move_and_slide()
+
+func fly_state(delta):
+	move(delta)
