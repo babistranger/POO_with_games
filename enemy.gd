@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-enum BigRedState {
+enum enemy {
 	walk, 
 	receive_damage,
 	dead
@@ -16,7 +16,7 @@ enum BigRedState {
 const SPEED = 10.0
 const JUMP_VELOCITY = -400.0
 
-var status: BigRedState
+var status: enemyState
 var direction = 1
 @export var max_health = 3.0 
 var _health = 0.0              # O símbolo antes da variável torna ela privada em godot
@@ -34,34 +34,34 @@ func _physics_process(delta: float) -> void:          #Implementar os processos 
 		velocity += get_gravity() * delta           #add gravidade 
 		
 	match status:                                 #implementando uma máquina de estados finitos
-		BigRedState.walk:                        #estado para o inimigo patrulhar
+		enemyState.walk:                        #estado para o inimigo patrulhar
 			walk_state(delta)
-		BigRedState.receive_damage:             #estado ser atacado
+		enemyState.receive_damage:             #estado ser atacado
 			receive_damage_state()
-		BigRedState.dead:                      #estado ser morto
+		enemyState.dead:                      #estado ser morto
 			dead_state(delta)
 			
 	move_and_slide()
 			
 func go_to_walk_state():                            #estado de transição para o inimigo patrulhar
-	status = BigRedState.walk
+	status = enemyState.walk
 	anima.play("walk")
 	
 func go_to_receive_damage_state():
-	status = BigRedState.receive_damage
+	status = enemyState.receive_damage
 	anima.play("hit") 
 	#fazendo knockback
 	velocity.x = -direction * 50
 	velocity.y = -100
 
 func go_to_dead_state(): 
-	status = BigRedState.dead
+	status = enemyState.dead
 	anima.play("dead")
 	hitbox.process_mode = Node.PROCESS_MODE_DISABLED     #Matar também o colisor de área de "ataque"
 	velocity = Vector2.ZERO
 	
 func walk_state(_delta):                      
-	velocity.x = SPEED * direction
+	move()                                       #aplicando polimorfismo
 	
 	if wall_detector.is_colliding():             #função de andar para patrulhar um território verificando o limite de parede
 		scale.x *= -1 
@@ -71,6 +71,9 @@ func walk_state(_delta):
 		scale.x *= -1 
 		direction *= -1 
 		
+func move():
+	velocity.x = SPEED * direction
+
 func receive_damage_state():                  #Função para o estado de receber dano
 	if not anima.is_playing():
 		if _health > 0:
@@ -82,7 +85,7 @@ func dead_state(_delta):
 	pass 
 	
 func take_damage(damage = 1):           #O método que modifica a saúde do inimigo (impõe dano ao inimigo)
-	if status == BigRedState.dead:      #Verificando se o inimigo não está morto 
+	if status == enemyState.dead:      #Verificando se o inimigo não está morto 
 		return
 	health_bar.visible = true       #A barra de saúde só aparece quando toma dano
 	health_bar.value = _health        
@@ -96,11 +99,11 @@ func display_status():                #Função para mostrar o status do inimigo
 	var state_text = ""
 
 	match status:
-		BigRedState.walk:
+		enemyState.walk:
 			state_text = "WALK"
-		BigRedState.receive_damage:
+		enemyState.receive_damage:
 			state_text = "HIT"
-		BigRedState.dead:
+		enemyState.dead:
 			state_text = "DEAD"
 
 	status_label.text = "HP: %d | State: %s | Dir: %d" % [_health, state_text, direction]      #HP - quantas vidas tem, state, que estado está, direção
